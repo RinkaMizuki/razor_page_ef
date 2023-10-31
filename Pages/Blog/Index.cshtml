@@ -1,0 +1,72 @@
+@page "/blog/{p:int?}"
+@model CS51_ASP.NET_Razor_EF_1.Pages_Blog.IndexModel
+
+@{
+    ViewData["Title"] = "Trang blogs";
+    var notFoundSearchResult = ViewData["Không tìm thấy"] as string;
+
+    var paginationModel = new PageitaionModel.Helper.PageitaionModel()
+            {
+                currentPage = @Model.currentPage,
+                totalPages = @Model.totalPages,
+                urlGenerate = (int? p) => Url.Page("/Blog/Index", new { p = p }).ToString(),
+            };
+}
+
+@{
+    await Html.RenderPartialAsync("_Pagination", paginationModel);
+}
+
+<h1>Trang bài viết</h1>
+<div class="d-flex flex-row align-items-center">
+    <button class="btn btn-primary spacing">
+        <a asp-page="Create" class="create-btn">Tạo bài viết</a>
+    </button>
+    <form method="get" asp-page="./Index">
+        <label for="search">Tìm kiếm</label>
+        <input type="text" name="search" id="search">
+        <button type="submit">Tìm</button>
+    </form>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @* <label asp-for="@Model.Article[0].Title"></label> *@
+                @Html.DisplayNameFor(model => model.Article[0].Title)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Article[0].Content)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Article[0].PublishedDate)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Article)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Title)
+                </td>
+
+                <td>
+                    @Html.DisplayFor(modelItem => item.PublishedDate)
+                </td>
+                <td>
+                    <a asp-page="./Edit" asp-route-id="@item.Id">Chỉnh sửa</a> |
+                    <a asp-page="./Details" asp-route-id="@item.Id">Chi tiết</a> |
+                    <a asp-page="./Delete" asp-route-id="@item.Id">Xóa</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+@if (!string.IsNullOrEmpty(notFoundSearchResult))
+{
+    <span>Không tìm thấy dữ liệu .</span>
+    <a asp-page="./Index">Danh sách bài viết</a>
+}

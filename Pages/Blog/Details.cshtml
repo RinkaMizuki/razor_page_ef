@@ -1,0 +1,37 @@
+@page "/blog/detail/{id:int?}"
+@model CS51_ASP.NET_Razor_EF_1.Pages_Blog.DetailsModel
+
+@{
+    ViewData["Title"] = "Chi tiết";
+}
+
+<h1>Chi tiết về bài viết</h1>
+
+<div>
+    <h4>Article</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Article.Title)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Article.Title)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Article.Content)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Article.Content)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Article.PublishedDate)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Article.PublishedDate)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-page="./Edit" asp-route-id="@Model.Article?.Id">Chỉnh sửa</a> |
+    <a asp-page="./Index">Danh sách bài viết</a>
+</div>

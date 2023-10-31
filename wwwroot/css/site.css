@@ -20,3 +20,13 @@ html {
 body {
   margin-bottom: 60px;
 }
+.create-btn {
+  color: white;
+  text-decoration: none;
+}
+.create-btn:hover {
+  color: white;
+}
+.spacing {
+  margin-right: 30px;
+}
