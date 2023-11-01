@@ -39,11 +39,14 @@
                             <a class="nav-link text-dark" asp-area=""
                                 asp-page="/Blog/Index" asp-route-p="1">Blog</a>
                             @* <form method="get" asp-page="./Blog/Index">
-                                <input type="hidden" name="p" value="1" />
-                                <button type="submit" class="">Blog</button>
+                            <input type="hidden" name="p" value="1" />
+                            <button type="submit" class="">Blog</button>
                             </form> *@
                         </li>
                     </ul>
+                    @{
+                        await Html.RenderPartialAsync("_LoginPartial");
+                    }
                 </div>
             </div>
         </nav>

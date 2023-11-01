@@ -1,0 +1,24 @@
+@using razor_page_ef
+@using Microsoft.AspNetCore.Identity
+
+@inject UserManager<AuthenUser> userManager
+@inject SignInManager<AuthenUser> signInManager
+
+<ul class="navbar-nav gap-4">
+    @if (signInManager.IsSignedIn(User))
+    {
+        <span class="text text-dark">Hello, @userManager.GetUserName(User)</span>
+        <li class="nav-item text text-dark">
+            <a asp-area="Identity" asp-page="/Account/Logout">Đăng xuất</a>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item text text-dark">
+            <a asp-area="Identity" asp-page="/Account/Register">Đăng kí</a>
+        </li>
+        <li class="nav-item text text-dark">
+            <a asp-area="Identity" asp-page="/Account/Login">Đăng nhập</a>
+        </li>
+    }
+</ul>
