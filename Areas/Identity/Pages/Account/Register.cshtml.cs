@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
@@ -30,7 +31,50 @@ namespace CS51_ASP.NET_Razor_EF_1.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<AuthenUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        public class InputModel
+        {
+            [Required(ErrorMessage = "Trường {0} là bắt buộc.")]
+            [EmailAddress]
+            [Display(Name = "Email")]
+            public string Email { get; set; }
 
+            [Required]
+            [StringLength(100, ErrorMessage = "{0} có độ dài từ {2} đến {1} kí tự.", MinimumLength = 3)]
+            [DataType(DataType.Password)]
+            [Display(Name = "Mật khẩu")]
+            public string Password { get; set; }
+
+            [DataType(DataType.Password)]
+            [Display(Name = "Nhập lại mật khẩu")]
+            [Compare("Password", ErrorMessage = "{0} không trùng khớp.")]
+            public string ConfirmPassword { get; set; }
+
+            [Required(ErrorMessage = "Trường {0} là bắt buộc.")]
+            [DisplayName("Tên người dùng")]
+            [DataType(DataType.Text)]
+            public string UserName { get; set; }
+        }
+        private IUserEmailStore<AuthenUser> GetEmailStore()
+        {
+            if (!_userManager.SupportsUserEmail)
+            {
+                throw new NotSupportedException("Không hỗ trợ việc xác thực bằng Email");
+            }
+            return (IUserEmailStore<AuthenUser>)_userStore;
+        }
+        private AuthenUser CreateUser()
+        {
+            try
+            {
+                return Activator.CreateInstance<AuthenUser>();
+            }
+            catch
+            {
+                throw new InvalidOperationException($"Can't create an instance of '{nameof(AuthenUser)}'. " +
+                    $"Ensure that '{nameof(AuthenUser)}' is not an abstract class and has a parameterless constructor, or alternatively " +
+                    $"override the register page in /Areas/Identity/Pages/Account/Register.cshtml");
+            }
+        }
         public RegisterModel(
             UserManager<AuthenUser> userManager,
             IUserStore<AuthenUser> userStore,
@@ -45,61 +89,11 @@ namespace CS51_ASP.NET_Razor_EF_1.Areas.Identity.Pages.Account
             _logger = logger;
             _emailSender = emailSender;
         }
-
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [BindProperty]
         public InputModel Input { get; set; }
-
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public string ReturnUrl { get; set; }
-
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
+        //ExternalLogins nó chứa các Service login bên ngoài (FB, Google,...)
         public IList<AuthenticationScheme> ExternalLogins { get; set; }
-
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public class InputModel
-        {
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
-            [Required]
-            [EmailAddress]
-            [Display(Name = "Email")]
-            public string Email { get; set; }
-
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
-            [Required]
-            [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
-            [DataType(DataType.Password)]
-            [Display(Name = "Password")]
-            public string Password { get; set; }
-
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
-            [DataType(DataType.Password)]
-            [Display(Name = "Confirm password")]
-            [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
-            public string ConfirmPassword { get; set; }
-        }
-
 
         public async Task OnGetAsync(string returnUrl = null)
         {
@@ -113,32 +107,38 @@ namespace CS51_ASP.NET_Razor_EF_1.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
+                //khi Valid thành công thì tạo ra một User
                 var user = CreateUser();
 
-                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+                //thêm các trường dữ liệu vào trong UserStore
+                await _userStore.SetUserNameAsync(user, Input.UserName, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+                //Tiến hành tạo một User với Password và email và username
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation("User created a new account with password.");
-
+                    _logger.LogInformation("Đã tạo mới một User.");
+                    //lấy ID của User
                     var userId = await _userManager.GetUserIdAsync(user);
+                    //tạo mã thông báo Confirm gửi đến Email của User
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    //Encode mã thông báo bằng Base64
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                     var callbackUrl = Url.Page(
                         "/Account/ConfirmEmail",
                         pageHandler: null,
                         values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
-                        protocol: Request.Scheme);
+                        protocol: Request.Scheme); //protocol là lấy luôn phần hostname (http://localhost:5154)
 
-                    await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-
+                    await _emailSender.SendEmailAsync(Input.Email, "Xác nhận email của bạn cho trang Razor",
+                        $"Hãy xác thực email của bạn thông qua <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>Nhấn vào đây.</a>.");
+                    // nếu có options SignIn.RequireConfirmedAccount thì xác nhận trước rồi mới login
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
                         return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
                     }
+                    //ngược lại cho vào trang login luôn rồi xác thực sau
                     else
                     {
                         await _signInManager.SignInAsync(user, isPersistent: false);
@@ -153,29 +153,6 @@ namespace CS51_ASP.NET_Razor_EF_1.Areas.Identity.Pages.Account
 
             // If we got this far, something failed, redisplay form
             return Page();
-        }
-
-        private AuthenUser CreateUser()
-        {
-            try
-            {
-                return Activator.CreateInstance<AuthenUser>();
-            }
-            catch
-            {
-                throw new InvalidOperationException($"Can't create an instance of '{nameof(AuthenUser)}'. " +
-                    $"Ensure that '{nameof(AuthenUser)}' is not an abstract class and has a parameterless constructor, or alternatively " +
-                    $"override the register page in /Areas/Identity/Pages/Account/Register.cshtml");
-            }
-        }
-
-        private IUserEmailStore<AuthenUser> GetEmailStore()
-        {
-            if (!_userManager.SupportsUserEmail)
-            {
-                throw new NotSupportedException("The default UI requires a user store with email support.");
-            }
-            return (IUserEmailStore<AuthenUser>)_userStore;
         }
     }
 }

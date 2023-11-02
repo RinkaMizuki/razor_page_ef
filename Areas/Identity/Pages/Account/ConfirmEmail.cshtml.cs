@@ -18,10 +18,14 @@ namespace CS51_ASP.NET_Razor_EF_1.Areas.Identity.Pages.Account
     public class ConfirmEmailModel : PageModel
     {
         private readonly UserManager<AuthenUser> _userManager;
+        private readonly SignInManager<AuthenUser> _signInManager;
+        private readonly ILogger<ConfirmEmailModel> _logger;
 
-        public ConfirmEmailModel(UserManager<AuthenUser> userManager)
+        public ConfirmEmailModel(UserManager<AuthenUser> userManager, SignInManager<AuthenUser> signInManager, ILogger<ConfirmEmailModel> logger)
         {
             _userManager = userManager;
+            _signInManager = signInManager;
+            _logger = logger;
         }
 
         /// <summary>
@@ -40,13 +44,23 @@ namespace CS51_ASP.NET_Razor_EF_1.Areas.Identity.Pages.Account
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return NotFound($"Unable to load user with ID '{userId}'.");
+                return NotFound($"Không thể tìm thấy User có ID = '{userId}'.");
             }
 
             code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
             var result = await _userManager.ConfirmEmailAsync(user, code);
-            StatusMessage = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
-            return Page();
+            var checkConfirm = result.Succeeded ? "Cảm ơn bạn đã xác thực email." : "Lỗi xác thực email.";
+            if (result.Succeeded)
+            {
+                await _signInManager.SignInAsync(user, false);
+                _logger.LogInformation(checkConfirm);
+                return RedirectToPage("/Index");
+            }
+            else
+            {
+                _logger.LogInformation(checkConfirm);
+                return NotFound();
+            }
         }
     }
 }

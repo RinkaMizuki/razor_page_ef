@@ -44,7 +44,7 @@ namespace CS51_ASP.NET_Razor_EF_1.Areas.Identity.Pages.Account
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public string EmailConfirmationUrl { get; set; }
-
+        public string EmailUserRegister { get; set; }
         public async Task<IActionResult> OnGetAsync(string email, string returnUrl = null)
         {
             if (email == null)
@@ -54,6 +54,7 @@ namespace CS51_ASP.NET_Razor_EF_1.Areas.Identity.Pages.Account
             returnUrl = returnUrl ?? Url.Content("~/");
 
             var user = await _userManager.FindByEmailAsync(email);
+            EmailUserRegister = email;
             if (user == null)
             {
                 return NotFound($"Unable to load user with email '{email}'.");
@@ -61,7 +62,7 @@ namespace CS51_ASP.NET_Razor_EF_1.Areas.Identity.Pages.Account
 
             Email = email;
             // Once you add a real email sender, you should remove this code that lets you confirm the account
-            DisplayConfirmAccountLink = true;
+            DisplayConfirmAccountLink = false;
             if (DisplayConfirmAccountLink)
             {
                 var userId = await _userManager.GetUserIdAsync(user);
