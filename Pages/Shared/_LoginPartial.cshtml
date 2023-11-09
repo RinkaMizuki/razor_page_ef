@@ -4,12 +4,16 @@
 @inject UserManager<AuthenUser> userManager
 @inject SignInManager<AuthenUser> signInManager
 
-<ul class="navbar-nav gap-4">
+<ul class="navbar-nav gap-4 align-items-center">
     @if (signInManager.IsSignedIn(User))
     {
-        <span class="text text-dark">Hello, @userManager.GetUserName(User)</span>
+        <li><a class="text text-dark" asp-area="Identity" asp-page="/Account/Manage/Index">Hello,
+                @userManager.GetUserName(User)</a></li>
         <li class="nav-item text text-dark">
-            <a asp-area="Identity" asp-page="/Account/Logout">Đăng xuất</a>
+            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout"
+                asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
+                <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+            </form>
         </li>
     }
     else

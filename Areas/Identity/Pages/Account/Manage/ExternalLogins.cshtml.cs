@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -31,28 +32,12 @@ namespace CS51_ASP.NET_Razor_EF_1.Areas.Identity.Pages.Account.Manage
             _userStore = userStore;
         }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public IList<UserLoginInfo> CurrentLogins { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public IList<AuthenticationScheme> OtherLogins { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public bool ShowRemoveButton { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [TempData]
         public string StatusMessage { get; set; }
 
@@ -124,13 +109,26 @@ namespace CS51_ASP.NET_Razor_EF_1.Areas.Identity.Pages.Account.Manage
             {
                 throw new InvalidOperationException($"Unexpected error occurred loading external login info.");
             }
-
-            var result = await _userManager.AddLoginAsync(user, info);
-            if (!result.Succeeded)
+            string userExternalLogin = null;
+            if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
             {
-                StatusMessage = "The external login was not added. External logins can only be associated with one account.";
+                userExternalLogin = info.Principal.FindFirstValue(ClaimTypes.Email);
+            }
+            if (userExternalLogin == user.Email)
+            {
+                var result = await _userManager.AddLoginAsync(user, info);
+                if (!result.Succeeded)
+                {
+                    StatusMessage = "The external login was not added. External logins can only be associated with one account.";
+                    return RedirectToPage();
+                }
+            }
+            else
+            {
+                StatusMessage = "Không hỗ trợ liên kết Tài khoản Google khác email";
                 return RedirectToPage();
             }
+
 
             // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);

@@ -3,9 +3,23 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using razor_page_ef;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var httpsConnectionAdapterOptions = new HttpsConnectionAdapterOptions
+{
+    SslProtocols = System.Security.Authentication.SslProtocols.Tls12,
+    ClientCertificateMode = ClientCertificateMode.AllowCertificate,
+    ServerCertificate = new System.Security.Cryptography.X509Certificates.X509Certificate2("./certificate.pfx", "0867706538a")
+
+};
+builder.WebHost.ConfigureKestrel(options =>
+options.ConfigureEndpointDefaults(listenOptions =>
+listenOptions.UseHttps(httpsConnectionAdapterOptions)));
+
+builder.WebHost.UseUrls("https://localhost:5118/");
 
 // Add services to the container.
 builder.Services.AddRazorPages();
@@ -23,6 +37,23 @@ builder.Services.AddIdentity<AuthenUser, IdentityRole>()
 //                 .AddDefaultTokenProviders();
 
 //Configure for Identity
+
+//Change Path Authorize(phải gọi sau AddIdentity)
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/login";
+    options.LogoutPath = "/logout";
+    options.AccessDeniedPath = "/access-denied";
+});
+builder.Services.AddAuthorization(options => {
+    // options.AddPolicy("Admin", authBuilder => {
+    //     authBuilder.RequireRole("Administrators");
+    // });
+});
+builder.Services.Configure<SecurityStampValidatorOptions>(options => {
+    //Khoảng thời gian sau khi thay đổi quyền và phải chờ để hệ thống nạp lại quyền
+    options.ValidationInterval = TimeSpan.FromSeconds(5);
+});
 builder.Services.Configure<IdentityOptions>(options =>
 {
     // Thiết lập về Password
@@ -35,7 +66,7 @@ builder.Services.Configure<IdentityOptions>(options =>
 
     // Cấu hình Ban - khóa user
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5); // Khóa 5 phút
-    options.Lockout.MaxFailedAccessAttempts = 5; // Thất bại 5 lần thì khóa
+    options.Lockout.MaxFailedAccessAttempts = 3; // Thất bại 5 lần thì khóa
     options.Lockout.AllowedForNewUsers = true; // Mới được tạo cũng sẽ bị khóa
 
     // Thiết lập về User
@@ -66,6 +97,16 @@ builder.Services.AddDbContext<BlogContext>(options =>
         Console.WriteLine("Something went wrong when connecting to DB");
     }
 });
+
+//config Authentication via Provider
+builder.Services.AddAuthentication()
+                .AddGoogle(googleOptions =>
+                {
+                    var configOptions = configuration.GetSection("Authentication:Google");
+                    googleOptions.ClientId = configOptions["ClientId"];
+                    googleOptions.ClientSecret = configOptions["ClientSecret"];
+                    googleOptions.CallbackPath = "/dang-nhap-google";
+                });
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.

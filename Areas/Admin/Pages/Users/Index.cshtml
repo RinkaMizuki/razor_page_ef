@@ -1,0 +1,42 @@
+﻿@page "/admin/users/{p:int?}"
+@model App.Admin.User.IndexModel
+@{
+    ViewData["Title"] = "Quản lí user role";
+    var paginationModel = new PageitaionModel.Helper.PageitaionModel()
+            {
+                currentPage = @Model.currentPage,
+                totalPages = @Model.totalPages,
+                urlGenerate = (int? p) => Url.Page("/Users/Index", new { p = p }).ToString(),
+            };
+}
+<h1>@ViewData["Title"]</h1>
+<h1>Tông số user là : @Model.totalUser</h1>
+
+<partial name="_StatusMessage" model="@Model.StatusMessage"/>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Tên user</th>
+            <th>Vai trò</th>
+            <th>Tác vụ</th>
+        </tr>
+    </thead>
+    @foreach (var user in @Model.users)
+    {
+        <tr>
+            <td>@user.UserName</td>
+            <td>@user.RoleNames</td>
+            <td>
+                <a class="btn btn-primary btn-sm" asp-page="./AddRole"
+                    asp-route-userId="@user.Id">Cập nhật role</a>
+                <a class="btn btn-primary btn-sm" asp-page="./SetPassword"
+                    asp-route-userId="@user.Id">Đặt mật khẩu</a>
+            </td>
+        </tr>
+    }
+</table>
+
+@{
+    await Html.RenderPartialAsync("_Pagination", paginationModel);
+}

@@ -1,3 +1,5 @@
+@@Lưu ý là mỗi Request là một phiên làm việc => dữ liệu được set sẽ mất khi có một request mới
+
 @Câu lệnh tạo template CRUD
     - dotnet aspnet-codegenerator razorpage -m CS51_ASP.NET_Razor_EF_1.Article -dc CS51_ASP.NET_Razor_EF_1.BlogContext -udl -outDir Pages/Blog --referenceScriptLibraries
 
@@ -40,3 +42,7 @@ ASP.NET hiểu và nó sẽ gửi Email để Confirm Account
 
 - Sử dụng Command này để tạo ra các trang razor mặc định của UI 
 => dotnet aspnet-codegenerator identity -dc Album.Data.AppDbContext
+
+
+@Tạo razor page Roles (Areas/Admin/Pages/Roles)
+- dotnet new page -n Index -o Areas/Admin/Pages/Roles --namespace App.Admin.Roles

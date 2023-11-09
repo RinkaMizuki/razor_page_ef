@@ -1,0 +1,12 @@
+﻿@page "/admin/roles/delete/{roleId}"
+@model App.Admin.Roles.DeleteModel
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<h1>["Title"]</h1>
+<p>Bạn có chắc chắn muốn xóa ?</p>
+<h2 class="text text-primary">@Model.role.Name</h2>
+<form method="post">
+    <input type="submit" value="Đồng ý">
+</form>

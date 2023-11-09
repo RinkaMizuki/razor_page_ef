@@ -1,0 +1,32 @@
+﻿@page "/admin/users/add-role/{userId}"
+@model App.Admin.User.AddRoleModel
+@{
+    ViewData["Title"] = "Add role";
+}
+<h1>@ViewData["Title"]</h1>
+<form method="post" class="w-50">
+    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert">
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="@Model.RoleNames" class="form-label"></label>
+        @Html.ListBoxFor(model => model.RoleNames, @Model.selectListItems, new
+            {
+                id = "select-list-role",
+                @class = "w-50"
+            })
+        <span asp-validation-for="@Model.RoleNames" class="text-danger"></span>
+    </div>
+    <button type="submit" class="w-100 btn btn-lg btn-primary">Cập nhật role</button>
+</form>
+
+@section Scripts {
+    <script src="~/lib/multiple-select/multiple-select.min.js"></script>
+    <link rel="stylesheet" href="~/lib/multiple-select/multiple-select.min.css">
+    <script>
+        $("#select-list-role").multipleSelect({
+            keepOpen : false,
+            selectAll : false,
+            isOpen : false
+        });
+    </script>
+}

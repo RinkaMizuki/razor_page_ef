@@ -1,0 +1,22 @@
+﻿@page "/admin/roles/create"
+@model App.Admin.Roles.CreateModel
+@{
+    ViewData["Title"] = "Create Role";
+}
+
+<h1>@ViewData["Title"]</h1>
+@{
+    await Html.RenderPartialAsync("_StatusMessage", @Model.StatusMessage);
+}
+<form class="form-inline" method="post">
+    <div class="form-group mb-3 d-flex gap-2 align-items-center">
+        <label asp-for="Input.Name"></label>
+        <input asp-for="Input.Name" class="form-group" placeholder="Tên" />
+        <button type="submit" class="btn btn-primary btn-sm">Tạo</button>
+        <span asp-validation-for="Input.Name" class="text-danger"></span>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

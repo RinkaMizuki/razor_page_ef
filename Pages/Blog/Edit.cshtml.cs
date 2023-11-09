@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CS51_ASP.NET_Razor_EF_1;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CS51_ASP.NET_Razor_EF_1.Pages_Blog
 {

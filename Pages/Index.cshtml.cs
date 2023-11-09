@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,8 +19,11 @@ public class IndexModel : PageModel
 
     public async Task OnGet()
     {
-        List<Article> listArticle = await (from a in _myBlogContext.articles
-                                    select a).ToListAsync();
-        ViewData["ListArticle"] = listArticle;
+        if (_myBlogContext.articles != null)
+        {
+            List<Article> listArticle = await (from a in _myBlogContext.articles
+                                               select a).ToListAsync();
+            ViewData["ListArticle"] = listArticle;
+        }
     }
 }

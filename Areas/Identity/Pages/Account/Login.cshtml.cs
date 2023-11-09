@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using razor_page_ef;
+using System.ComponentModel;
 
 namespace CS51_ASP.NET_Razor_EF_1.Areas.Identity.Pages.Account
 {
@@ -34,6 +35,8 @@ namespace CS51_ASP.NET_Razor_EF_1.Areas.Identity.Pages.Account
         [BindProperty]
         public InputModel Input { get; set; }
 
+        public bool Linked { get; set; }
+        public string _ProviderDisplayName { get; set; }
         public IList<AuthenticationScheme> ExternalLogins { get; set; }
 
         public string ReturnUrl { get; set; }
@@ -44,18 +47,22 @@ namespace CS51_ASP.NET_Razor_EF_1.Areas.Identity.Pages.Account
         public class InputModel
         {
             [Required]
-            public string UserName { get; set; }
+            [DisplayName("Tên người dùng hoặc Email")]
+            public string UserNameOrEmail { get; set; }
 
             [Required]
             [DataType(DataType.Password)]
+            [Display(Name = "Mật khẩu")]
             public string Password { get; set; }
 
-            [Display(Name = "Remember me?")]
+            [Display(Name = "Ghi nhớ tôi")]
             public bool RememberMe { get; set; }
         }
 
-        public async Task OnGetAsync(string returnUrl = null)
+        public async Task OnGetAsync(bool linked = false, string ProviderDisplayName = "", string returnUrl = null)
         {
+            Linked = linked;
+            _ProviderDisplayName = ProviderDisplayName;
             if (!string.IsNullOrEmpty(ErrorMessage))
             {
                 ModelState.AddModelError(string.Empty, ErrorMessage);
@@ -79,9 +86,22 @@ namespace CS51_ASP.NET_Razor_EF_1.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
+
+                string typeLog = "";
+
+                var userLoginByEmail = await _userManager.FindByEmailAsync(Input.UserNameOrEmail);
+                if (userLoginByEmail != null)
+                {
+                    typeLog = userLoginByEmail.UserName;
+                }
+                var userLoginByUsername = await _userManager.FindByNameAsync(Input.UserNameOrEmail);
+                if (userLoginByUsername != null)
+                {
+                    typeLog = Input.UserNameOrEmail;
+                }
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(Input.UserName, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+                var result = await _signInManager.PasswordSignInAsync(typeLog, Input.Password, Input.RememberMe, lockoutOnFailure: true);
 
                 if (result.Succeeded)
                 {
