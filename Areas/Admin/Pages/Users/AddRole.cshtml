@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "Add role";
 }
+<partial name="_StatusMessage" model="Model.StatusMessage">
 <h1>@ViewData["Title"]</h1>
 <form method="post" class="w-50">
     <div asp-validation-summary="ModelOnly" class="text-danger" role="alert">
@@ -16,17 +17,50 @@
             })
         <span asp-validation-for="@Model.RoleNames" class="text-danger"></span>
     </div>
-    <button type="submit" class="w-100 btn btn-lg btn-primary">Cập nhật role</button>
+    <button type="submit" class="btn btn-lg btn-primary">Cập nhật role</button>
 </form>
+
+<ul>
+    <p>Các claim thuộc role của : @Model.user.UserName</p>
+    @if (Model.RoleClaims.Count > 0)
+    {
+        @foreach (var roleClaim in Model.RoleClaims)
+        {
+            <li class="text text-secondary">@roleClaim.ClaimType : @roleClaim.ClaimValue</li>
+        }
+    }
+    <br>
+    <p>Các claim riêng của user : @Model.user.UserName
+        <a class="text text-primary" asp-page="./AddUserClaim"
+            asp-route-userId="@Model.user.Id">+ Thêm claim riêng</a>
+    </p>
+    @if (Model.UserClaims.Count > 0)
+    {
+        @foreach (var userClaim in Model.UserClaims)
+        {
+            <li class="text text-secondary">@userClaim.ClaimType : @userClaim.ClaimValue
+                <a class="btn btn-primary btn-sm" asp-page="./EditClaimUser"
+                    asp-route-userId="@Model.user.Id">Cập nhật Claim</a>
+                <a class="btn btn-danger btn-sm" asp-page="./DeleteClaimUser"
+                    asp-route-userId="@Model.user.Id">Xóa claim</a>
+            </li>
+        }
+    }
+    else
+    {
+        <li>Chưa có Claim riêng</li>
+    }
+
+</ul>
 
 @section Scripts {
     <script src="~/lib/multiple-select/multiple-select.min.js"></script>
     <link rel="stylesheet" href="~/lib/multiple-select/multiple-select.min.css">
     <script>
         $("#select-list-role").multipleSelect({
-            keepOpen : false,
-            selectAll : false,
-            isOpen : false
+            keepOpen: false,
+            selectAll: false,
+            isOpen: false
         });
     </script>
 }

@@ -1,3 +1,4 @@
+using Bogus.DataSets;
 using CS51_ASP.NET_Razor_EF_1;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,11 +17,12 @@ namespace App.Admin.User
         public const int PER_PAGE = 10;
         public int totalPages { get; set; }
         public int totalUser { get; set; }
-        public class UserAuthenAndRole : AuthenUser
+        public class UserAndRoleClaims : AuthenUser
         {
             public string RoleNames { get; set; }
+            public string Claims { get; set; }
         }
-        public List<UserAuthenAndRole> users { get; set; }
+        public List<UserAndRoleClaims> users { get; set; }
         public readonly UserManager<AuthenUser> _userManager;
         public readonly BlogContext _blogContext;
         public IndexModel(UserManager<AuthenUser> userManager, BlogContext blogContext)
@@ -28,16 +30,18 @@ namespace App.Admin.User
             _userManager = userManager;
             _blogContext = blogContext;
         }
+        
         public async Task<IActionResult> OnGet()
         {
-            var listUser = _userManager.Users.OrderBy(u => u.UserName);
+            var listUser = _blogContext.Users.OrderBy(u => u.UserName);
             totalUser = listUser.Count();
             totalPages = (int)Math.Ceiling((double)(totalUser / PER_PAGE));
 
-            var listUserPagination = listUser.Skip((currentPage - 1) * PER_PAGE).Take(PER_PAGE).Select(u => new UserAuthenAndRole
+            var listUserPagination = listUser.Skip((currentPage - 1) * PER_PAGE).Take(PER_PAGE).Select(u => new UserAndRoleClaims
             {
                 Id = u.Id,
                 UserName = u.UserName,
+                DateBirth = u.DateBirth,
             });
             users = await listUserPagination.ToListAsync();
 

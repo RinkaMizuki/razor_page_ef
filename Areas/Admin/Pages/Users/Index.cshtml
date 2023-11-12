@@ -18,6 +18,8 @@
     <thead>
         <tr>
             <th>Tên user</th>
+            <th>Ngày sinh</th>
+            <th>Claim</th>
             <th>Vai trò</th>
             <th>Tác vụ</th>
         </tr>
@@ -26,6 +28,8 @@
     {
         <tr>
             <td>@user.UserName</td>
+            <td>@String.Format("{0:d}", user.DateBirth)</td>
+            <td>Claim</td>
             <td>@user.RoleNames</td>
             <td>
                 <a class="btn btn-primary btn-sm" asp-page="./AddRole"

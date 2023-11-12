@@ -1,23 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using CS51_ASP.NET_Razor_EF_1;
 using Microsoft.AspNetCore.Authorization;
 
 namespace CS51_ASP.NET_Razor_EF_1.Pages_Blog
 {
     public class EditModel : PageModel
     {
-        private readonly CS51_ASP.NET_Razor_EF_1.BlogContext _context;
-
-        public EditModel(CS51_ASP.NET_Razor_EF_1.BlogContext context)
+        private readonly BlogContext _context;
+        private readonly IAuthorizationService _authorizationService;
+        public EditModel(BlogContext context, IAuthorizationService authorizationService)
         {
             _context = context;
+            _authorizationService = authorizationService;
         }
 
         [BindProperty]
@@ -30,7 +25,7 @@ namespace CS51_ASP.NET_Razor_EF_1.Pages_Blog
                 return NotFound();
             }
 
-            var article =  await _context.articles.FirstOrDefaultAsync(m => m.Id == id);
+            var article = await _context.articles.FirstOrDefaultAsync(m => m.Id == id);
             if (article == null)
             {
                 return NotFound();
@@ -52,7 +47,13 @@ namespace CS51_ASP.NET_Razor_EF_1.Pages_Blog
 
             try
             {
-                await _context.SaveChangesAsync();
+                if ((await _authorizationService.AuthorizeAsync(this.User, Article, "CanEditArticle")).Succeeded)
+                {
+                    await _context.SaveChangesAsync();
+                }
+                else {
+                    return Content("Bạn không có quyền cập nhật hoặc bài viết này đã quá cũ");
+                }
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -71,7 +72,7 @@ namespace CS51_ASP.NET_Razor_EF_1.Pages_Blog
 
         private bool ArticleExists(int id)
         {
-          return _context.articles.Any(e => e.Id == id);
+            return _context.articles.Any(e => e.Id == id);
         }
     }
 }

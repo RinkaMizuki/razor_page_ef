@@ -1,0 +1,27 @@
+﻿@page "/admin/users/edit-claim-user/{userId}"
+@model App.Admin.User.EditClaimUserModel
+@{
+    ViewData["Title"] = "Edit claim for user";
+}
+<h1>Cập nhật Claim riêng cho @Model.user.UserName</h1>
+@{
+    await Html.RenderPartialAsync("_StatusMessage", @Model.StatusMessage);
+}
+
+<form class="form-inline" method="post">
+    <div class="form-group mb-3 d-flex gap-2 align-items-center">
+        <label asp-for="Input.UserClaimType"></label>
+        <input asp-for="Input.UserClaimType" class="form-group"
+            placeholder="Loại claim" />
+        <label asp-for="Input.UserClaimValue"></label>
+        <input asp-for="Input.UserClaimValue" class="form-group"
+            placeholder="Tên claim" />
+        <button type="submit" class="btn btn-primary btn-sm">Cập nhật</button>
+        <span asp-validation-for="Input.UserClaimValue" class="text-danger"></span>
+        <span asp-validation-for="Input.UserClaimType" class="text-danger"></span>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

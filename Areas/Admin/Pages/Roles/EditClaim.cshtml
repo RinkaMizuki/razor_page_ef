@@ -1,0 +1,25 @@
+﻿@page "/admin/roles/edit-claim/{claimId:int?}"
+@model App.Admin.Roles.EditClaimModel
+@{
+    ViewData["Title"] = "Edit Claim";
+}
+
+<h1>@ViewData["Title"]</h1>
+@{
+    await Html.RenderPartialAsync("_StatusMessage", @Model.StatusMessage);
+}
+<form class="form-inline" method="post">
+    <div class="form-group mb-3 d-flex gap-2 align-items-center">
+        <label asp-for="Input.TypeClaim"></label>
+        <input asp-for="Input.TypeClaim" class="form-group" placeholder="Loại claim" />
+        <label asp-for="Input.NameClaim"></label>
+        <input asp-for="Input.NameClaim" class="form-group" placeholder="Tên claim" />
+        <button type="submit" class="btn btn-primary btn-sm">Cập nhật</button>
+        <span asp-validation-for="Input.NameClaim" class="text-danger"></span>
+        <span asp-validation-for="Input.TypeClaim" class="text-danger"></span>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

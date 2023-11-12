@@ -8,7 +8,23 @@
     <div class="form-group mb-3 d-flex gap-2 align-items-center">
         <label asp-for="Input.Name"></label>
         <input asp-for="Input.Name" class="form-group" placeholder="Tên" />
-        <button type="submit" class="btn btn-primary btn-sm">Cập nhật</button>
         <span asp-validation-for="Input.Name" class="text-danger"></span>
     </div>
+    <button type="submit" class="btn btn-primary btn-sm">Cập nhật</button>
+    <a class="btn btn-primary btn-sm" asp-page="./Index">Danh sách các Roles</a>
 </form>
+
+<p class="mt-4">Các claim của : @Model.Role.Name
+    <a asp-page="./AddRoleClaim" asp-route-roleId="@Model.Role.Id"> + Thêm claim</a>
+</p>
+
+<ul>
+    @foreach (var claim in Model.roleClaims)
+    {
+        <li>@claim.ClaimType : @claim.ClaimValue
+            <a asp-page="./EditClaim" asp-route-claimId="@claim.Id">Cập nhật</a>
+            <a asp-page="./DeleteClaim" asp-route-claimId="@claim.Id">Xóa</a>
+        </li>
+
+    }
+</ul>

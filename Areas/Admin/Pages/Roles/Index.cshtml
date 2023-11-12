@@ -24,6 +24,12 @@
         <tr>
             <td>
                 @role.Name
+                <br>
+                <ul>
+                @foreach(var claim in role.Claims) {
+                    <li class="text text-primary">@claim</li>
+                }
+                </ul>
             </td>
             <td>
                 <a class="btn btn-primary btn-sm" asp-page="./Edit" asp-route-roleId="@role.Id">Cập nhật</a>

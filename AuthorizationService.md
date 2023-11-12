@@ -1,0 +1,3 @@
+Khi bạn sử dụng thuộc tính [Authorize] trong các Controller, Action, Razor Page để xác định quyền truy cập - thực chất đã sử dụng dịch vụ IAuthorizationService trong hệ thống để thực hiện các Authorization Handler.
+
+Trong nhiều tình huống - ngay trong code bạn muốn thi hành tác vụ kiểm tra quyền thì bạn phải lấy được đối tượng dịch vụ IAuthorizationService. Để có đối tượng này bạn có thể Inject qua phương thức khởi tạo của Controller của PageModel, hay Inject trong View

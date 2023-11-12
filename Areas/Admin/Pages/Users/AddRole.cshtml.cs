@@ -1,8 +1,10 @@
 using System.ComponentModel;
+using CS51_ASP.NET_Razor_EF_1;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using razor_page_ef;
 
@@ -12,17 +14,21 @@ namespace App.Admin.User
     {
         public readonly RoleManager<IdentityRole> _roleManager;
         public readonly UserManager<AuthenUser> _userManager;
+        public readonly BlogContext _blogContext;
         [BindProperty]
         [DisplayName("Tên các role")]
         public string[] RoleNames { get; set; }
         public SelectList selectListItems { get; set; }
+        public List<IdentityRoleClaim<string>> RoleClaims { get; set; } = new List<IdentityRoleClaim<string>>();
+        public List<IdentityUserClaim<string>> UserClaims { get; set; } = new List<IdentityUserClaim<string>>();
         public AuthenUser user { get; set; }
         [TempData]
         public string StatusMessage { get; set; }
-        public AddRoleModel(UserManager<AuthenUser> userManager, RoleManager<IdentityRole> roleManager)
+        public AddRoleModel(UserManager<AuthenUser> userManager, RoleManager<IdentityRole> roleManager, BlogContext blogContext)
         {
             _roleManager = roleManager;
             _userManager = userManager;
+            _blogContext = blogContext;
         }
         public async Task<IActionResult> OnGet(string userId)
         {
@@ -35,6 +41,22 @@ namespace App.Admin.User
             {
                 return NotFound("Không tìm thấy User");
             }
+
+            var listRole = from ur in _blogContext.UserRoles
+                           join r in _blogContext.Roles
+                           on ur.RoleId equals r.Id
+                           where ur.UserId == userId
+                           select r;
+
+            RoleClaims = await (from c in _blogContext.RoleClaims
+                                join lr in listRole
+                                on c.RoleId equals lr.Id
+                                select c).ToListAsync();
+
+            UserClaims = await (from uc in _blogContext.UserClaims
+                                where uc.UserId == userId
+                                select uc).ToListAsync();
+
             RoleNames = (await _userManager.GetRolesAsync(user)).ToArray();
             var allRole = _roleManager.Roles.Select(r => r.Name).ToList();
             selectListItems = new SelectList(allRole);

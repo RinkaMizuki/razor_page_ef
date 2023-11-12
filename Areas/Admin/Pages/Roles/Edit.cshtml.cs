@@ -3,8 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using CS51_ASP.NET_Razor_EF_1;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.EntityFrameworkCore;
 
 namespace App.Admin.Roles
 {
@@ -21,18 +20,23 @@ namespace App.Admin.Roles
         }
         [BindProperty]
         public InputModel Input { get; set; }
+        public List<IdentityRoleClaim<string>> roleClaims { get; set; }
+        public IdentityRole Role { get; set; }
         public async Task<IActionResult> OnGet(string roleId)
         {
             if (string.IsNullOrEmpty(roleId))
             {
                 return NotFound("Không tìm thấy role");
             }
-            var findRole = await _roleManager.FindByIdAsync(roleId);
-            if (findRole != null)
+            Role = await _roleManager.FindByIdAsync(roleId);
+            if (Role != null)
             {
+                roleClaims = await (from c in _blogContext.RoleClaims
+                                    where c.RoleId == Role.Id
+                                    select c).ToListAsync();
                 Input = new InputModel()
                 {
-                    Name = findRole.Name,
+                    Name = Role.Name,
                 };
             }
             return Page();
@@ -43,13 +47,13 @@ namespace App.Admin.Roles
             {
                 return NotFound("Không tìm thấy role");
             }
-            var findRole = await _roleManager.FindByIdAsync(roleId);
-            if (findRole == null)
+            Role = await _roleManager.FindByIdAsync(roleId);
+            if (Role == null)
             {
                 return Page();
             }
-            findRole.Name = Input.Name;
-            var result = await _roleManager.UpdateAsync(findRole);
+            Role.Name = Input.Name;
+            var result = await _roleManager.UpdateAsync(Role);
             if (result.Succeeded)
             {
                 StatusMessage = $"Bạn vừa đổi tên role thành : {Input.Name}";

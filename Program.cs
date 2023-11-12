@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using razor_page_ef;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.Extensions.Options;
+using App.Authorize.Requiremnts;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,12 +46,43 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LogoutPath = "/logout";
     options.AccessDeniedPath = "/access-denied";
 });
-builder.Services.AddAuthorization(options => {
-    // options.AddPolicy("Admin", authBuilder => {
-    //     authBuilder.RequireRole("Administrators");
-    // });
+builder.Services.AddAuthorization(options =>
+{
+    //Để thỏa mãn được chính sách AllowEditUser thì phải 
+    //1. Login, Có role : Administrators, Vjp
+    options.AddPolicy("AllowEditRole", policyBuilder =>
+    {
+        policyBuilder.RequireAuthenticatedUser();
+        //phải có role Administrators
+        policyBuilder.RequireRole("Administrators");
+        // policyBuilder.RequireRole("Vjp");
+        //phải có Claim manage.role thuộc role hoặc thuộc Claim riêng của user
+        policyBuilder.RequireClaim("manage.role", new string[] { "all", "tatca" });
+    });
+
+    options.AddPolicy("IsGenZ", policyBuilder =>
+    {
+        policyBuilder.RequireAuthenticatedUser();
+        policyBuilder.Requirements.Add(new AuthorizationRequimentGenZ());
+    });
+    
+    options.AddPolicy("Manager", policyBuilder => {
+        policyBuilder.RequireAuthenticatedUser();
+        policyBuilder.RequireRole("Administrators");
+    });
+
+    options.AddPolicy("CanEditArticle", policyBuilder => {
+        policyBuilder.RequireAuthenticatedUser();
+        policyBuilder.Requirements.Add(new AuthorizationRequimentEdit());
+    });
+
 });
-builder.Services.Configure<SecurityStampValidatorOptions>(options => {
+
+//Add service AppAuthorizationHandler into DI container
+builder.Services.AddTransient<IAuthorizationHandler, AppAuthorizationHandler>();
+
+builder.Services.Configure<SecurityStampValidatorOptions>(options =>
+{
     //Khoảng thời gian sau khi thay đổi quyền và phải chờ để hệ thống nạp lại quyền
     options.ValidationInterval = TimeSpan.FromSeconds(5);
 });

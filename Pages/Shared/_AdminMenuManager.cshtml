@@ -1,0 +1,20 @@
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService authorizationService
+
+@{
+    var resultAuthor = await authorizationService.AuthorizeAsync(this.User, "Manager");
+}
+@if (resultAuthor.Succeeded)
+{
+    <div class="dropdown">
+        <a class="text text-dark dropdown-toggle" role="button"
+            data-bs-toggle="dropdown" aria-expanded="false">
+            Manager
+        </a>
+
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" asp-area="Admin" asp-page="/Roles/Index">Quản lí Roles</a></li>
+            <li><a class="dropdown-item" asp-area="Admin" asp-page="/Users/Index" asp-route-p="1">Quản lí Users</a></li>
+        </ul>
+    </div>
+}

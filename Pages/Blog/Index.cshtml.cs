@@ -5,17 +5,18 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using CS51_ASP.NET_Razor_EF_1;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using razor_page_ef;
 
 namespace CS51_ASP.NET_Razor_EF_1.Pages_Blog
 {
-    [Authorize]
+    [Authorize(Policy = "IsGenZ")]
     public class IndexModel : PageModel
     {
-        private readonly CS51_ASP.NET_Razor_EF_1.BlogContext _context;
+        private readonly BlogContext _context;
 
-        public IndexModel(CS51_ASP.NET_Razor_EF_1.BlogContext context)
+        public IndexModel(BlogContext context)
         {
             _context = context;
         }
@@ -26,13 +27,9 @@ namespace CS51_ASP.NET_Razor_EF_1.Pages_Blog
         public int totalPages { get; set; }
         public IList<Article> Article { get; set; } = default!;
 
-        public async Task OnGetAsync([FromQuery] string search)
+        public async Task OnGetAsync(string search)
         {
-            // if (currentPage == 0)
-            // {
-            //     currentPage = 1;
 
-            // }
             var countPage = await _context.articles.CountAsync();
 
             totalPages = (int)Math.Ceiling((double)(countPage / PER_PAGE));
@@ -42,7 +39,7 @@ namespace CS51_ASP.NET_Razor_EF_1.Pages_Blog
                 Article = await (from a in _context.articles
                                  orderby a.PublishedDate ascending
                                  select a)
-                                 .Skip((currentPage - 1) * PER_PAGE)
+                                 .Skip(((currentPage <= 0 ? 1 : currentPage) - 1) * PER_PAGE)
                                  .Take(PER_PAGE)
                                  .ToListAsync();
             }
